@@ -1,0 +1,299 @@
+{
+  "name": "Processo seletivo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtDayOfMonth": 24,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        -80
+      ],
+      "id": "762fde4a-1cd1-4e89-945f-21c866d9d9cf",
+      "name": "Dispara no dia 24/04/2026 ás 9AM"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1GIT6tIoEpUU-27XjtjkPz-IjUPtjmpZgfQboubopz-4",
+          "mode": "list",
+          "cachedResultName": "Processo Seletivo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIT6tIoEpUU-27XjtjkPz-IjUPtjmpZgfQboubopz-4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Candidatos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GIT6tIoEpUU-27XjtjkPz-IjUPtjmpZgfQboubopz-4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        -80
+      ],
+      "id": "28902f26-cc29-46f1-b067-e5044e09b1f2",
+      "name": "Obtem Candidatos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5mqj2QewJw3C7Fkr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4559178d-e148-481d-8135-4e49535de812",
+              "leftValue": "={{ $json['Anos Experiência'] }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "0ab2ddd8-02a8-490b-9f05-8366aa69b036",
+              "leftValue": "={{ $json['Grau Escolaridade'] }}",
+              "rightValue": "Superior",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        -80
+      ],
+      "id": "9c1b78ac-7898-45a1-a429-081f28102c2d",
+      "name": "Candidato Aprovado?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        128,
+        -240
+      ],
+      "id": "87d3f9f2-0e80-4a72-a497-7872bd71a532",
+      "name": "Para cada Candidato"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Automation <celianesfc@gmail.com>",
+        "toEmail": "={{ $json.Email }}",
+        "subject": "Você foi aprovado.",
+        "html": "=Olá {{ $json.Nome.split(' ')[0] }}, tudo bem?\n\nPassando para informar que você passou para a próxima etapa do processo seletivo.\n\nParabéns!",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        -240
+      ],
+      "id": "1e658658-0041-4f18-9737-4f9640a36ea7",
+      "name": "Envia email de aprovação",
+      "webhookId": "8d4e21b4-8e26-4269-9b39-30b7d4679127",
+      "credentials": {
+        "smtp": {
+          "id": "SgVEPbc5i12Nrqnc",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -208
+      ],
+      "id": "fbc2c93b-7a52-45d8-aba1-7cf6bfe723ea",
+      "name": "Agurdar 5s",
+      "webhookId": "b826fb04-0f0e-4954-b5c8-da5c0f3e445f"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Nome"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        112,
+        32
+      ],
+      "id": "ff0a2da4-3a27-497e-baea-7763322e3025",
+      "name": "Gera array de nomes"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Automation <celianesfc@gmail.com>",
+        "toEmail": "celianecarrareto@gmail.com",
+        "subject": "Candidatos reprovados",
+        "emailFormat": "text",
+        "text": "=Olá, \nSegue a relação dos candidatos reprovados no processo seletivo.\n\n{{ $json.Nome[0] }}\n\nAt.te,\n\nCeliane",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        32
+      ],
+      "id": "8abad459-2e53-4160-a637-c9f766756118",
+      "name": "Envia lista de candidatos reprovado",
+      "webhookId": "08126171-a861-4154-b388-e483b2fba6b2",
+      "credentials": {
+        "smtp": {
+          "id": "SgVEPbc5i12Nrqnc",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dispara no dia 24/04/2026 ás 9AM": {
+      "main": [
+        [
+          {
+            "node": "Obtem Candidatos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtem Candidatos": {
+      "main": [
+        [
+          {
+            "node": "Candidato Aprovado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Candidato Aprovado?": {
+      "main": [
+        [
+          {
+            "node": "Para cada Candidato",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gera array de nomes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Para cada Candidato": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Envia email de aprovação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia email de aprovação": {
+      "main": [
+        [
+          {
+            "node": "Agurdar 5s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agurdar 5s": {
+      "main": [
+        [
+          {
+            "node": "Para cada Candidato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera array de nomes": {
+      "main": [
+        [
+          {
+            "node": "Envia lista de candidatos reprovado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eed9f66f-9827-4f9a-99f2-2a2444d9611b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d1fecd60e6ab4f50f055047b444254d8a907514f67894be8313652bc1eea67d5"
+  },
+  "id": "gcBTFuGLZXdjJWLJ",
+  "tags": []
+}
